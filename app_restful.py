@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
+from skills import Skills, SkillsAddAndRemove
 import json
 
 persons = [
@@ -26,14 +27,12 @@ persons = [
 app = Flask(__name__)
 api = Api(app)
 
-class person(Resource):
-
+class Person(Resource):
     def get(self, id):
         try:
             for person in persons:
                 if person.get("id") == id:
                     person_find = person
-
             return person_find
 
         except IndexError:
@@ -48,7 +47,6 @@ class person(Resource):
 
     def put(self, id):
         data = json.loads(request.data)
-
         for index, person in enumerate(persons):
             if person.get("id") == id:
                 persons[index] = data
@@ -57,23 +55,17 @@ class person(Resource):
     def delete(self, id):
         message = f"Developer {id} deleted"
         response = {"status": "ok", "message": message}
-
         for index, person in enumerate(persons):
             if person.get("id") == id:
                 persons.pop(index)
                 return response
-
-api.add_resource(person, "/dev/<int:id>")
-
-
-class list_all_person(Resource):
+class ListAllPersonsAndAddNewPerson(Resource):
     def get(self):
         persons.sort(key=lambda person: person.get("id"))
         return persons
     
     def post(self):
         data = json.loads(request.data)
-       
         for index, person in enumerate(persons):
             
             if index == 0:
@@ -86,13 +78,15 @@ class list_all_person(Resource):
             
             else:
                 data["id"] = len(persons) + 1
-        
             last_id = person.get("id")
 
         persons.append(data)
         return data
 
-api.add_resource(list_all_person, "/dev")
+api.add_resource(Person, "/dev/<int:id>")
+api.add_resource(ListAllPersonsAndAddNewPerson, "/dev")
+api.add_resource(Skills, "/skills")
+api.add_resource(SkillsAddAndRemove, "/skills/<int:id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
